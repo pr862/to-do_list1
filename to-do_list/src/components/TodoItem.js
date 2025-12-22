@@ -128,6 +128,7 @@ const TodoItem = ({
           </button>
           <button onClick={onEditStart}>✏️</button>
           <button onClick={remove}>🗑️</button>
+          
         </div>
       )}
     </li>

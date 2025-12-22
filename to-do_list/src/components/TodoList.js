@@ -64,8 +64,6 @@ const TodoList = ({
           editDueDate={editDueDate}
           setEditDueDate={setEditDueDate}
           onEditDueDateSave={() => onEditDueDateSave(todo.id)}
-          onEditCategorySave={() => onEditCategorySave(todo.id)}
-          onUndoDelete={onUndoDelete}
         />
       ))}
     </ul>
