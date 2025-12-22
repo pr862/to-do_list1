@@ -16,7 +16,7 @@ A modern, feature-rich todo list application built with React and Firebase. This
 
 ## 🚀 Live Demo
 
-The app is deployed and available at: [https://pr862.github.io/to-do_list](https://pr862.github.io/to-do_list)
+The app is deployed and available at: [https://pr862.github.io/to-do_list1](https://pr862.github.io/to-do_list1)
 
 ## 🛠️ Tech Stack
 
