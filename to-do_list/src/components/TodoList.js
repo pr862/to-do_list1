@@ -1,34 +1,30 @@
-import React, { useState } from 'react';
+import React from 'react';
 import TodoItem from './TodoItem';
 import Lottie from 'lottie-react';
 import emptyAnim from '../animations/empty.json';
 import completeAnim from '../animations/celebration.json';
 
-const TodoList = ({ todos, toggleTodo, deleteTodo, categoryColors, setTodos }) => {
-  const [editingId, setEditingId] = useState(null);
-  const [editText, setEditText] = useState('');
-
+const TodoList = ({ 
+  todos, 
+  toggleTodo, 
+  deleteTodo, 
+  categoryColors, 
+  editingId, 
+  editText, 
+  setEditText, 
+  onEditStart, 
+  onEditCancel, 
+  onEditSave,
+  editCategory,
+  setEditCategory,
+  editDueDate,
+  setEditDueDate,
+  onEditDueDateSave,
+  onEditCategorySave,
+  onUndoDelete
+}) => {
   const total = todos.length;
   const completed = todos.filter((todo) => todo.completed).length;
-
-  const handleEditStart = (todo) => {
-    setEditingId(todo.id);
-    setEditText(todo.text);
-  };
-
-  const handleEditCancel = () => {
-    setEditingId(null);
-    setEditText('');
-  };
-
-  const handleEditSave = (id) => {
-    if (editText.trim() === '') return;
-    const updated = todos.map((todo) =>
-      todo.id === id ? { ...todo, text: editText } : todo
-    );
-    setTodos(updated);
-    setEditingId(null);
-  };
 
   if (total === 0) {
     return (
@@ -60,9 +56,16 @@ const TodoList = ({ todos, toggleTodo, deleteTodo, categoryColors, setTodos }) =
           isEditing={editingId === todo.id}
           editText={editText}
           setEditText={setEditText}
-          onEditStart={() => handleEditStart(todo)}
-          onEditCancel={handleEditCancel}
-          onEditSave={() => handleEditSave(todo.id)}
+          onEditStart={() => onEditStart(todo)}
+          onEditCancel={onEditCancel}
+          onEditSave={() => onEditSave(todo.id)}
+          editCategory={editCategory}
+          setEditCategory={setEditCategory}
+          editDueDate={editDueDate}
+          setEditDueDate={setEditDueDate}
+          onEditDueDateSave={() => onEditDueDateSave(todo.id)}
+          onEditCategorySave={() => onEditCategorySave(todo.id)}
+          onUndoDelete={onUndoDelete}
         />
       ))}
     </ul>

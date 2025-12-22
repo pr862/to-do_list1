@@ -53,14 +53,326 @@ h1 {
   display: flex;
   gap: 10px;
   margin-bottom: 20px;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 input {
-  flex: 1;
   padding: 12px;
   border: 2px solid #ccc;
   border-radius: 10px;
   font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--theme-color);
+  box-shadow: 0 0 10px rgba(35, 166, 213, 0.3);
+}
+
+/* Specific styling for main task input */
+.input-container input[type="text"]:first-child {
+  flex: 1;
+  min-width: 200px;
+}
+
+.main-input {
+  flex: 1;
+  min-width: 200px;
+}
+
+/* Date picker styling */
+.date-picker-container {
+  position: relative;
+}
+
+.date-picker-input {
+  padding: 12px;
+  border: 2px solid #ccc;
+  border-radius: 10px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  min-width: 140px;
+}
+
+.date-picker-input:focus {
+  outline: none;
+  border-color: var(--theme-color);
+  box-shadow: 0 0 10px rgba(35, 166, 213, 0.3);
+}
+
+/* Edit date picker styling */
+.edit-date-picker {
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  flex: 1;
+  min-width: 120px;
+}
+
+.edit-date-picker:focus {
+  outline: none;
+  border-color: var(--theme-color);
+  box-shadow: 0 0 10px rgba(35, 166, 213, 0.3);
+}
+
+/* Search input styling */
+input[type="text"]:not(.input-container input[type="text"]) {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Date picker popper customization */
+.date-picker-popper {
+  z-index: 9999;
+}
+
+/* ==== RESPONSIVE DESIGN ==== */
+
+/* Mobile styles (320px and up) */
+@media (max-width: 767px) {
+  body {
+    padding: 20px 10px;
+    font-size: 14px;
+  }
+
+  .app {
+    max-width: 100%;
+    padding: 20px;
+    border-radius: 20px;
+    margin: 0;
+  }
+
+  h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+
+  .input-container {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .main-input,
+  .date-picker-input,
+  select {
+    width: 100%;
+    min-width: auto;
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+
+  .date-picker-input {
+    padding: 12px;
+  }
+
+  button {
+    padding: 12px 16px;
+    font-size: 14px;
+    width: 100%;
+  }
+
+  li {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 15px;
+  }
+
+  li > div:first-child {
+    width: 100%;
+  }
+
+  li button {
+    align-self: flex-start;
+    margin-left: 0;
+    margin-right: 10px;
+    font-size: 16px;
+    padding: 8px;
+  }
+
+  .edit-date-picker {
+    min-width: 120px;
+  }
+}
+
+/* Tablet styles (768px to 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .app {
+    max-width: 600px;
+    padding: 35px;
+  }
+
+  .input-container {
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+
+  .main-input {
+    min-width: 250px;
+  }
+
+  .date-picker-input {
+    min-width: 160px;
+  }
+
+  li {
+    padding: 15px 20px;
+  }
+}
+
+/* Desktop styles (1024px and up) */
+@media (min-width: 1024px) {
+  .app {
+    max-width: 700px;
+    padding: 40px;
+  }
+
+  .input-container {
+    gap: 12px;
+  }
+
+  .main-input {
+    min-width: 300px;
+  }
+
+  .date-picker-input {
+    min-width: 180px;
+  }
+
+  li {
+    padding: 15px 20px;
+  }
+
+  li button {
+    font-size: 18px;
+    padding: 10px;
+  }
+}
+
+/* Large desktop styles (1440px and up) */
+@media (min-width: 1440px) {
+  .app {
+    max-width: 800px;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  li button {
+    min-height: 36px;
+    min-width: 36px;
+  }
+
+  input, select, .date-picker-input {
+    min-height: 44px;
+  }
+}
+
+/* ==== REACT DATEPICKER STYLES ==== */
+
+/* React DatePicker base styles */
+.react-datepicker-wrapper {
+  display: inline-block;
+  width: 100%;
+}
+
+.react-datepicker__input-container input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.react-datepicker {
+  font-family: 'Poppins', sans-serif;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.react-datepicker__header {
+  background: linear-gradient(45deg, var(--theme-color), var(--theme-color-alt));
+  border-bottom: none;
+  border-radius: 10px 10px 0 0;
+}
+
+.react-datepicker__current-month {
+  color: white;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.react-datepicker__day-name {
+  color: white;
+  font-weight: 600;
+}
+
+.react-datepicker__day {
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.react-datepicker__day:hover {
+  background-color: var(--theme-color);
+  color: white;
+}
+
+.react-datepicker__day--selected {
+  background: var(--theme-color);
+  color: white;
+  font-weight: 600;
+}
+
+.react-datepicker__day--keyboard-selected {
+  background: var(--theme-color-alt);
+  color: white;
+}
+
+.react-datepicker__day--today {
+  background: #ffeb3b;
+  color: #333;
+  font-weight: 600;
+}
+
+.react-datepicker__day--outside-month {
+  color: #999;
+}
+
+.react-datepicker__navigation {
+  top: 13px;
+}
+
+.react-datepicker__navigation--previous {
+  border-right-color: white;
+}
+
+.react-datepicker__navigation--next {
+  border-left-color: white;
+}
+
+/* Responsive date picker */
+@media (max-width: 767px) {
+  .react-datepicker {
+    width: 280px;
+    font-size: 14px;
+  }
+  
+  .react-datepicker__current-month {
+    font-size: 14px;
+  }
+  
+  .react-datepicker__day {
+    width: 35px;
+    height: 35px;
+    line-height: 35px;
+  }
 }
 
 /* ==== BUTTON ==== */
@@ -163,3 +475,87 @@ body.dark-mode .status-text {
 .clear-btn:hover {
   background-color: #e04848;
 } 
+/* App.css (add these styles for login/register pages) */
+.auth-container {
+  max-width: 400px;
+  margin: 80px auto;
+  padding: 30px;
+  background: #fff;
+  border-radius: 15px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.auth-container h2 {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.auth-container input {
+  width: 85%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border-radius: 10px;
+  border: 2px solid #ccc;
+  font-size: 16px;
+}
+
+.auth-container button {
+  width: 100%;
+  padding: 12px;
+  background: #00bcd4;
+  color: white;
+  font-size: 16px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.auth-container button:hover {
+  background: #0097a7;
+}
+
+.auth-container .error {
+  color: red;
+  margin-top: 10px;
+}
+
+.auth-container p {
+  margin-top: 15px;
+  font-size: 14px;
+}
+.auth-container a {
+  color: #00bcd4;
+  text-decoration: none;
+}
+.auth-container a:hover {
+  text-decoration: underline;
+}
+
+/* Additional styles for improved auth experience */
+.auth-container input:disabled {
+  background-color: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.auth-container button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.auth-container button:disabled:hover {
+  background-color: #cccccc;
+  box-shadow: none;
+}
+
+.auth-container .error {
+  background-color: #ffe6e6;
+  color: #d32f2f;
+  padding: 10px;
+  border-radius: 5px;
+  border-left: 4px solid #d32f2f;
+  margin: 10px 0;
+}

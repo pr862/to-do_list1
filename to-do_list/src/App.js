@@ -1,14 +1,38 @@
 import React, { useState, useEffect } from 'react';
+import DatePicker from 'react-datepicker';
 import EmojiPicker from 'emoji-picker-react';
 import TodoList from './components/TodoList';
+import { BrowserRouter, Routes, Route , Navigate} from "react-router-dom";
+import Login from "./pages/login";
+import Register from "./pages/register";
+import 'react-datepicker/dist/react-datepicker.css';
 import './App.css';
 
-const App = () => {
-  const [todos, setTodos] = useState(() => {
-    const saved = localStorage.getItem('todos');
-    return saved ? JSON.parse(saved) : [];
-  });
+import { 
+  getTodosRealtime, 
+  addTodoFirebase, 
+  deleteTodoFirebase, 
+  toggleTodoFirebase, 
+  updateTodoFirebase,
+  updateTodoDueDateFirebase,
+  updateTodoCategoryFirebase
+} from './services/todoservices';
 
+import { 
+  requestNotificationPermission, 
+  checkTodoReminders, 
+  setupNotificationListeners,
+  areNotificationsSupported,
+  getNotificationPermission,
+  showWelcomeNotification
+} from './services/notifications';
+
+import { auth } from './firebase';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+
+// TodoApp Component - separate to avoid re-renders
+const TodoApp = ({ user }) => {
+  const [todos, setTodos] = useState([]);
   const [input, setInput] = useState('');
   const [category, setCategory] = useState('General');
   const [emoji, setEmoji] = useState('');
@@ -16,6 +40,10 @@ const App = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState('');
+  const [editCategory, setEditCategory] = useState('General');
+  const [editDueDate, setEditDueDate] = useState(null);
+  const [dueDate, setDueDate] = useState(null);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
 
   const categoryColors = {
     General: '#888',
@@ -24,75 +52,179 @@ const App = () => {
     Urgent: '#e53935'
   };
 
+  // 🔥 Firestore realtime listener (only when user is authenticated)
   useEffect(() => {
-    localStorage.setItem('todos', JSON.stringify(todos));
-  }, [todos]);
+    if (user) {
+      const unsubscribe = getTodosRealtime(setTodos);
+      return () => unsubscribe();
+    } else {
+      setTodos([]); // Clear todos when user logs out
+    }
+  }, [user]);
 
-  const addTodo = () => {
-    if (input.trim()) {
-      setTodos([
-        ...todos,
-        {
-          id: Date.now(),
-          text: input,
-          completed: false,
-          category: category,
-          emoji: emoji
-        }
-      ]);
-      setInput('');
-      setEmoji('');
+  // Initialize notifications and check for reminders
+  useEffect(() => {
+    // Check if notifications are supported
+    if (areNotificationsSupported()) {
+      const permission = getNotificationPermission();
+      setNotificationsEnabled(permission === 'granted');
+      
+      // Set up notification listeners
+      setupNotificationListeners();
+    }
+  }, []);
+
+  // Check for todo reminders whenever todos change
+  useEffect(() => {
+    if (todos.length > 0 && notificationsEnabled) {
+      checkTodoReminders(todos);
+    }
+  }, [todos, notificationsEnabled]);
+
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error('Error signing out:', error);
     }
   };
 
-  const toggleTodo = (id) => {
-    setTodos(prev =>
-      prev.map(todo =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
-      )
-    );
+  const toggleNotifications = async () => {
+    if (notificationsEnabled) {
+      setNotificationsEnabled(false);
+    } else {
+      const granted = await requestNotificationPermission();
+      setNotificationsEnabled(granted);
+      if (granted) {
+        showWelcomeNotification();
+      }
+    }
   };
 
-  const deleteTodo = (id) => {
-    setTodos(prev => prev.filter(todo => todo.id !== id));
+  const addTodo = async () => {
+    if (!input.trim()) return;
+    await addTodoFirebase({
+      text: input.trim(),
+      completed: false,
+      category,
+      emoji: emoji || '',
+      dueDate: dueDate ? dueDate.toISOString() : null
+    });
+    setInput('');
+    setEmoji('');
+    setDueDate(null);
   };
 
-  const clearCompleted = () => {
-    const activeTodos = todos.filter(todo => !todo.completed);
-    setTodos(activeTodos);
+  const toggleTodo = async (id, completed) => {
+    await toggleTodoFirebase(id, !completed);
+  };
+
+  const deleteTodo = async (id) => {
+    await deleteTodoFirebase(id);
+  };
+
+  const clearCompleted = async () => {
+    const completedTodos = todos.filter(todo => todo.completed);
+    for (let todo of completedTodos) {
+      await deleteTodoFirebase(todo.id);
+    }
   };
 
   const handleEditStart = (todo) => {
     setEditingId(todo.id);
     setEditText(todo.text);
+    setEditCategory(todo.category || 'General');
+    setEditDueDate(todo.dueDate ? new Date(todo.dueDate) : null);
   };
 
-  const handleEditSave = (id) => {
-    if (editText.trim() === '') return;
-    const updated = todos.map(todo =>
-      todo.id === id ? { ...todo, text: editText } : todo
-    );
-    setTodos(updated);
+  const handleEditSave = async (id) => {
+    if (!editText.trim()) return;
+    await updateTodoFirebase(id, editText.trim());
     setEditingId(null);
     setEditText('');
+    setEditCategory('General');
+    setEditDueDate(null);
+  };
+
+  const handleEditDueDateSave = async (id) => {
+    await updateTodoDueDateFirebase(id, editDueDate ? editDueDate.toISOString() : null);
+  };
+
+  const handleEditCategorySave = async (id) => {
+    await updateTodoCategoryFirebase(id, editCategory);
   };
 
   const handleEditCancel = () => {
     setEditingId(null);
     setEditText('');
+    setEditCategory('General');
+    setEditDueDate(null);
   };
+
 
   const filteredTodos = todos.filter(todo =>
-    todo.text.toLowerCase().includes(searchTerm.toLowerCase())
+    (todo.text || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
 
   return (
     <div className="app">
-      <h1>My Creative Todo ✨</h1>
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        marginBottom: '20px',
+        flexWrap: 'wrap',
+        gap: '10px'
+      }}>
+        <h1>My Creative Todo ✨</h1>
+        <div style={{ 
+          display: 'flex', 
+          gap: '10px', 
+          alignItems: 'center',
+          flexWrap: 'wrap'
+        }}>
+          {areNotificationsSupported() && (
+            <button
+              onClick={toggleNotifications}
+              style={{
+                padding: '8px 12px',
+                backgroundColor: notificationsEnabled ? '#4caf50' : '#ff9800',
+                color: 'white',
+                border: 'none',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                fontSize: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+            >
+              {notificationsEnabled ? '🔔' : '🔕'} 
+              {notificationsEnabled ? 'On' : 'Off'}
+            </button>
+          )}
+          <span style={{ 
+            color: '#666',
+            fontSize: '14px'
+          }}>
+            {user.email}
+          </span>
+          <button 
+            onClick={handleLogout}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#0b0707ff',
+              color: 'white',
+              border: 'none',
+              borderRadius: '5px',
+              cursor: 'pointer'
+            }}
+          >
+            Logout
+          </button>
+        </div>
+      </div>
 
       <input
         type="text"
@@ -115,6 +247,7 @@ const App = () => {
           value={input}
           placeholder="Add a task..."
           onChange={(e) => setInput(e.target.value)}
+          className="main-input"
         />
 
         <select
@@ -132,7 +265,17 @@ const App = () => {
           <option value="Urgent">Urgent</option>
         </select>
 
-        {/* Emoji Picker Button */}
+        <div className="date-picker-container">
+          <DatePicker
+            selected={dueDate}
+            onChange={(date) => setDueDate(date)}
+            placeholderText="📅 Due date"
+            dateFormat="MMM dd, yyyy"
+            minDate={new Date()}
+            className="date-picker-input"
+          />
+        </div>
+
         <button
           type="button"
           onClick={() => setShowEmojiPicker(!showEmojiPicker)}
@@ -162,7 +305,7 @@ const App = () => {
         <button onClick={addTodo}>Add</button>
       </div>
 
-      {todos.some((todo) => todo.completed) && (
+      {todos.some(todo => todo.completed) && (
         <button onClick={clearCompleted} className="clear-btn">
           🧹 Clear Completed
         </button>
@@ -173,39 +316,97 @@ const App = () => {
         toggleTodo={toggleTodo}
         deleteTodo={deleteTodo}
         categoryColors={categoryColors}
-        setTodos={setTodos}
         editingId={editingId}
         editText={editText}
         setEditText={setEditText}
         onEditStart={handleEditStart}
         onEditCancel={handleEditCancel}
         onEditSave={handleEditSave}
+        editCategory={editCategory}
+        setEditCategory={setEditCategory}
+        editDueDate={editDueDate}
+        setEditDueDate={setEditDueDate}
+        onEditDueDateSave={handleEditDueDateSave}
+        onEditCategorySave={handleEditCategorySave}
+      
       />
-
-      {/* Scroll to Top Button */}
-      <button
-        onClick={scrollToTop}
-        style={{
-          position: 'fixed',
-          bottom: '20px',
-          right: '20px',
-          padding: '14px 18px',
-          fontSize: '20px',
-          borderRadius: '50%',
-          background: 'linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab)',
-          backgroundSize: '400% 400%',
-          animation: 'gradientBG 10s ease infinite',
-          color: '#fff',
-          border: 'none',
-          cursor: 'pointer',
-          boxShadow: '0 0 15px rgba(0, 0, 0, 0.3)',
-          zIndex: 1000
-        }}
-        title="Scroll to Top"
-      >
-        ⬆
-      </button>
     </div>
+  );
+};
+
+const App = () => {
+  const [user, setUser] = useState(null);
+  const [authInitialized, setAuthInitialized] = useState(false);
+
+  // 🔐 Auth state listener - only initialize once
+  useEffect(() => {
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+      setAuthInitialized(true);
+    });
+
+    return () => unsubscribeAuth();
+  }, []);
+
+  // Public Route Wrapper - for routes that don't require auth
+  const PublicRoute = ({ children }) => {
+    // If user is authenticated and trying to access login/register, redirect to todo
+    if (authInitialized && user) {
+      return <Navigate to="/todo" />;
+    }
+    // Otherwise show the public content
+    return children;
+  };
+
+  // Protected Route Component - only for authenticated users
+  const ProtectedRoute = ({ children }) => {
+    // If auth is not initialized or no user, redirect to login
+    if (!authInitialized || !user) {
+      return <Navigate to="/login" />;
+    }
+    
+    // Only show content when we have confirmed auth
+    return children;
+  };
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* Default route goes to login (no redirect needed) */}
+        <Route path="/" element={<Login />} />
+        
+        {/* Public routes - redirect authenticated users to todo */}
+        <Route 
+          path="/login" 
+          element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          } 
+        />
+        <Route 
+          path="/register" 
+          element={
+            <PublicRoute>
+              <Register />
+            </PublicRoute>
+          } 
+        />
+
+        {/* ✅ MAIN TODO APP - Protected route */}
+        <Route 
+          path="/todo" 
+          element={
+            <ProtectedRoute>
+              <TodoApp user={user} />
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Catch all other routes - redirect to login */}
+        <Route path="*" element={<Navigate to="/login" />} />
+      </Routes>
+    </BrowserRouter>
   );
 };
 

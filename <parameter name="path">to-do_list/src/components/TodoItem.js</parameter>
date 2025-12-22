@@ -1,5 +1,6 @@
 import React from 'react';
 import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 const TodoItem = ({
   todo,
@@ -11,64 +12,47 @@ const TodoItem = ({
   setEditText,
   editCategory = 'General',
   setEditCategory = () => {},
-  editDueDate,
-  setEditDueDate,
+  editDueDate = null,
+  setEditDueDate = () => {},
   onEditStart,
   onEditCancel,
   onEditSave,
-  onEditDueDateSave,
-  onEditCategorySave
 }) => {
   const color = categoryColors[todo.category] || '#999';
 
-  // Helper function to get due date status
+  // Helper to get due date status
   const getDueDateStatus = (dueDateString) => {
     if (!dueDateString) return null;
-    
-    const dueDate = new Date(dueDateString);
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
-    const taskDate = new Date(dueDate);
+
+    const taskDate = new Date(dueDateString);
     taskDate.setHours(0, 0, 0, 0);
-    
-    if (taskDate < today) {
-      return { status: 'overdue', color: '#e53935', icon: '⚠️' };
-    } else if (taskDate.getTime() === today.getTime()) {
-      return { status: 'today', color: '#ff9800', icon: '📅' };
-    } else {
-      return { status: 'future', color: '#4caf50', icon: '🗓️' };
-    }
+
+    if (taskDate < today) return { status: 'overdue', color: '#e53935', icon: '⚠️' };
+    if (taskDate.getTime() === today.getTime()) return { status: 'today', color: '#ff9800', icon: '📅' };
+    return { status: 'future', color: '#4caf50', icon: '🗓️' };
   };
 
-  const dueDateStatus = getDueDateStatus(todo.dueDate);
+  const dueDateStatus = todo.dueDate ? getDueDateStatus(todo.dueDate) : null;
 
   return (
-    <li className={todo.completed ? 'completed' : ''}>
-      <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+    <li className={todo.completed ? 'completed' : ''} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         {isEditing ? (
           <>
             <input
               type="text"
               value={editText}
               onChange={(e) => setEditText(e.target.value)}
-              style={{
-                padding: '6px',
-                borderRadius: '6px',
-                border: '1px solid #ccc',
-                marginBottom: '6px'
-              }}
+              style={{ padding: '6px', borderRadius: '6px', border: '1px solid #ccc', marginBottom: '6px' }}
             />
             <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
               <select
                 value={editCategory}
                 onChange={(e) => setEditCategory(e.target.value)}
-                style={{
-                  borderRadius: '6px',
-                  padding: '6px',
-                  fontWeight: '500',
-                  flex: 1
-                }}
+                style={{ borderRadius: '6px', padding: '6px', fontWeight: '500', flex: 1 }}
               >
                 <option value="General">General</option>
                 <option value="Work">Work</option>
@@ -86,8 +70,8 @@ const TodoItem = ({
               />
             </div>
             <div style={{ display: 'flex', gap: '6px' }}>
-              <button onClick={onEditSave}>💾 Save</button>
-              <button onClick={onEditCancel}>❌ Cancel</button>
+              <button onClick={onEditSave} style={{ cursor: 'pointer' }}>💾 Save</button>
+              <button onClick={onEditCancel} style={{ cursor: 'pointer' }}>❌ Cancel</button>
             </div>
           </>
         ) : (
@@ -97,23 +81,11 @@ const TodoItem = ({
               {todo.text}
             </span>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '4px' }}>
-              <small style={{ color, fontWeight: 'bold' }}>
-                📁 {todo.category}
-              </small>
+              <small style={{ color, fontWeight: 'bold' }}>📁 {todo.category}</small>
               {dueDateStatus && (
-                <small style={{ 
-                  color: dueDateStatus.color, 
-                  fontWeight: 'bold',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px'
-                }}>
+                <small style={{ color: dueDateStatus.color, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>
                   <span>{dueDateStatus.icon}</span>
-                  {new Date(todo.dueDate).toLocaleDateString('en-US', { 
-                    month: 'short', 
-                    day: 'numeric',
-                    year: 'numeric'
-                  })}
+                  {new Date(todo.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                 </small>
               )}
             </div>
@@ -123,11 +95,9 @@ const TodoItem = ({
 
       {!isEditing && (
         <div style={{ display: 'flex', gap: '6px' }}>
-          <button onClick={toggle}>
-            {todo.completed ? '↩️' : '✅'}
-          </button>
-          <button onClick={onEditStart}>✏️</button>
-          <button onClick={remove}>🗑️</button>
+          <button onClick={toggle} style={{ cursor: 'pointer' }}>{todo.completed ? '↩️' : '✅'}</button>
+          <button onClick={onEditStart} style={{ cursor: 'pointer' }}>✏️</button>
+          <button onClick={remove} style={{ cursor: 'pointer' }}>🗑️</button>
         </div>
       )}
     </li>
