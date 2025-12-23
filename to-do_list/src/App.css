@@ -386,11 +386,87 @@ button {
   background-color: var(--theme-color);
   box-shadow: 0 0 15px rgba(35, 166, 213, 0.5);
   transition: all 0.3s ease;
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 button:hover {
   background-color: var(--theme-color-alt);
   box-shadow: 0 0 25px rgba(35, 213, 171, 0.7);
+}
+
+/* ==== BUTTON VARIANTS ==== */
+
+/* Primary Action Buttons - Add, Login, Register */
+.btn-primary {
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  min-height: 48px;
+}
+
+/* Secondary Buttons - Logout, Notifications */
+.btn-secondary {
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  min-height: 40px;
+  min-width: 80px;
+}
+
+/* Icon Action Buttons - Save, Cancel, Edit, Delete, Toggle */
+.btn-icon {
+  padding: 8px;
+  font-size: 16px;
+  min-height: 40px;
+  min-width: 40px;
+  border-radius: 8px;
+  background: transparent;
+  border: 2px solid var(--theme-color);
+  color: var(--theme-color);
+  box-shadow: none;
+}
+
+.btn-icon:hover {
+  background-color: var(--theme-color);
+  color: white;
+  transform: scale(1.1);
+}
+
+/* Utility Buttons - Clear Completed */
+.btn-utility {
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  min-height: 44px;
+  background-color: #ff5c5c;
+  box-shadow: 0 0 15px rgba(255, 92, 92, 0.3);
+}
+
+.btn-utility:hover {
+  background-color: #e04848;
+  box-shadow: 0 0 25px rgba(255, 92, 92, 0.5);
+}
+
+/* Google Sign-in Button */
+.btn-google {
+  padding: 12px 16px;
+  font-size: 16px;
+  font-weight: 500;
+  min-height: 48px;
+  width: 100%;
+  background-color: white;
+  color: #444;
+  border: 2px solid #ddd;
+  box-shadow: none;
+}
+
+.btn-google:hover {
+  background-color: #f8f9fa;
+  border-color: #ccc;
 }
 
 /* ==== LIST ==== */

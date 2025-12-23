@@ -73,7 +73,37 @@ const Login = () => {
           required
           disabled={loading}
         />
-        <button type="submit" disabled={loading}>
+        <button 
+          type="submit" 
+          disabled={loading}
+          style={{
+            padding: '8px 12px',
+            borderRadius: '6px',
+            border: 'none',
+            cursor: loading ? 'not-allowed' : 'pointer',
+            fontSize: '14px',
+            minWidth: '40px',
+            height: '36px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: '#007bff',
+            color: 'white',
+            fontWeight: '500',
+            opacity: loading ? 0.7 : 1,
+            transition: 'all 0.2s ease'
+          }}
+          onMouseOver={(e) => {
+            if (!loading) {
+              e.target.style.backgroundColor = '#0056b3';
+            }
+          }}
+          onMouseOut={(e) => {
+            if (!loading) {
+              e.target.style.backgroundColor = '#007bff';
+            }
+          }}
+        >
           {loading ? 'Logging in...' : 'Login'}
         </button>
         {error && <p className="error">{error}</p>}
@@ -110,12 +140,12 @@ const Login = () => {
           disabled={loading}
           style={{
             width: '100%',
-            padding: '12px',
+            padding: '8px 12px',
             backgroundColor: 'white',
             color: '#444',
             border: '2px solid #ddd',
-            borderRadius: '8px',
-            fontSize: '16px',
+            borderRadius: '6px',
+            fontSize: '14px',
             fontWeight: '500',
             cursor: loading ? 'not-allowed' : 'pointer',
             display: 'flex',
@@ -123,7 +153,8 @@ const Login = () => {
             justifyContent: 'center',
             gap: '10px',
             transition: 'all 0.2s ease',
-            opacity: loading ? 0.7 : 1
+            opacity: loading ? 0.7 : 1,
+            minHeight: '36px'
           }}
           onMouseOver={(e) => {
             if (!loading) {

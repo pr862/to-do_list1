@@ -187,17 +187,9 @@ const TodoApp = ({ user }) => {
           {areNotificationsSupported() && (
             <button
               onClick={toggleNotifications}
+              className="btn-secondary"
               style={{
-                padding: '8px 12px',
-                backgroundColor: notificationsEnabled ? '#4caf50' : '#ff9800',
-                color: 'white',
-                border: 'none',
-                borderRadius: '5px',
-                cursor: 'pointer',
-                fontSize: '12px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px'
+                backgroundColor: notificationsEnabled ? '#4caf50' : '#ff9800'
               }}
             >
               {notificationsEnabled ? '🔔' : '🔕'} 
@@ -212,14 +204,7 @@ const TodoApp = ({ user }) => {
           </span>
           <button 
             onClick={handleLogout}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: '#0b0707ff',
-              color: 'white',
-              border: 'none',
-              borderRadius: '5px',
-              cursor: 'pointer'
-            }}
+            className="btn-secondary"
           >
             Logout
           </button>
@@ -279,13 +264,9 @@ const TodoApp = ({ user }) => {
         <button
           type="button"
           onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+          className="btn-secondary"
           style={{
-            marginLeft: '10px',
-            padding: '6px 10px',
-            fontSize: '18px',
-            borderRadius: '6px',
-            border: '1px solid #ccc',
-            cursor: 'pointer'
+            fontSize: '18px'
           }}
         >
           {emoji || '😀'}
@@ -302,11 +283,11 @@ const TodoApp = ({ user }) => {
           </div>
         )}
 
-        <button onClick={addTodo}>Add</button>
+        <button onClick={addTodo} className="btn-primary">Add</button>
       </div>
 
       {todos.some(todo => todo.completed) && (
-        <button onClick={clearCompleted} className="clear-btn">
+        <button onClick={clearCompleted} className="btn-utility">
           🧹 Clear Completed
         </button>
       )}

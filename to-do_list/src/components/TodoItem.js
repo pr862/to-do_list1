@@ -85,9 +85,9 @@ const TodoItem = ({
                 popperClassName="date-picker-popper"
               />
             </div>
-            <div style={{ display: 'flex', gap: '6px' }}>
-              <button onClick={onEditSave}>💾 Save</button>
-              <button onClick={onEditCancel}>❌ Cancel</button>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button onClick={onEditSave} className="btn-icon">💾</button>
+              <button onClick={onEditCancel} className="btn-icon">❌</button>
             </div>
           </>
         ) : (
@@ -122,13 +122,12 @@ const TodoItem = ({
       </div>
 
       {!isEditing && (
-        <div style={{ display: 'flex', gap: '6px' }}>
-          <button onClick={toggle}>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button onClick={toggle} className="btn-icon">
             {todo.completed ? '↩️' : '✅'}
           </button>
-          <button onClick={onEditStart}>✏️</button>
-          <button onClick={remove}>🗑️</button>
-          
+          <button onClick={onEditStart} className="btn-icon">✍️</button>
+          <button onClick={remove} className="btn-icon">🗑️</button>
         </div>
       )}
     </li>

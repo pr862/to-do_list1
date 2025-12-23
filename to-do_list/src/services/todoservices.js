@@ -1,12 +1,22 @@
-import { db } from '../firebase';
+import { db, auth } from '../firebase';
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, onSnapshot, query, orderBy } from "firebase/firestore";
 
-// Reference to Firestore collection 'todos'
-const todosCollection = collection(db, "todos");
+// Helper function to get user-specific collection reference
+const getTodosCollection = (userId) => {
+  if (!userId) throw new Error('User ID is required');
+  return collection(db, `todos_${userId}`);
+};
 
 // Real-time listener
 export const getTodosRealtime = (callback) => {
-  const q = query(todosCollection, orderBy("dueDate"));
+  const user = auth.currentUser;
+  if (!user) {
+    callback([]); // Return empty array if no user
+    return () => {}; // Return empty cleanup function
+  }
+  
+  const userTodosCollection = getTodosCollection(user.uid);
+  const q = query(userTodosCollection, orderBy("dueDate"));
   const unsubscribe = onSnapshot(q, (snapshot) => {
     const todos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     callback(todos);
@@ -16,48 +26,74 @@ export const getTodosRealtime = (callback) => {
 
 // One-time fetch (optional)
 export const getTodos = async () => {
-  const snapshot = await getDocs(todosCollection);
+  const user = auth.currentUser;
+  if (!user) return [];
+  
+  const userTodosCollection = getTodosCollection(user.uid);
+  const snapshot = await getDocs(userTodosCollection);
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 };
 
 // Add a new todo
 export const addTodoFirebase = async (todo) => {
-  await addDoc(todosCollection, todo);
+  const user = auth.currentUser;
+  if (!user) throw new Error('User must be authenticated to add todos');
+  
+  const userTodosCollection = getTodosCollection(user.uid);
+  await addDoc(userTodosCollection, todo);
 };
 
 // Delete a todo
 export const deleteTodoFirebase = async (id) => {
-  const todoDoc = doc(db, "todos", id);
+  const user = auth.currentUser;
+  if (!user) throw new Error('User must be authenticated to delete todos');
+  
+  const todoDoc = doc(db, `todos_${user.uid}`, id);
   await deleteDoc(todoDoc);
 };
 
 // Toggle completed
 export const toggleTodoFirebase = async (id, completed) => {
-  const todoDoc = doc(db, "todos", id);
+  const user = auth.currentUser;
+  if (!user) throw new Error('User must be authenticated to update todos');
+  
+  const todoDoc = doc(db, `todos_${user.uid}`, id);
   await updateDoc(todoDoc, { completed });
 };
 
 // Edit todo text
 export const updateTodoFirebase = async (id, text) => {
-  const todoDoc = doc(db, "todos", id);
+  const user = auth.currentUser;
+  if (!user) throw new Error('User must be authenticated to update todos');
+  
+  const todoDoc = doc(db, `todos_${user.uid}`, id);
   await updateDoc(todoDoc, { text });
 };
 
 // Update todo with due date
 export const updateTodoDueDateFirebase = async (id, dueDate) => {
-  const todoDoc = doc(db, "todos", id);
+  const user = auth.currentUser;
+  if (!user) throw new Error('User must be authenticated to update todos');
+  
+  const todoDoc = doc(db, `todos_${user.uid}`, id);
   await updateDoc(todoDoc, { dueDate });
 };
 
 // Update todo category
 export const updateTodoCategoryFirebase = async (id, category) => {
-  const todoDoc = doc(db, "todos", id);
+  const user = auth.currentUser;
+  if (!user) throw new Error('User must be authenticated to update todos');
+  
+  const todoDoc = doc(db, `todos_${user.uid}`, id);
   await updateDoc(todoDoc, { category });
 };
 
 // Restore deleted todo (for undo functionality)
 export const restoreDeletedTodoFirebase = async (deletedTodo) => {
   if (!deletedTodo || !deletedTodo.id) return;
+  
+  const user = auth.currentUser;
+  if (!user) throw new Error('User must be authenticated to restore todos');
   
   // If it was a new todo that was deleted before being saved to Firebase
   if (deletedTodo.tempId) {
@@ -70,7 +106,7 @@ export const restoreDeletedTodoFirebase = async (deletedTodo) => {
     });
   } else {
     // Restore from Firestore (if we were using soft deletes)
-    await updateDoc(doc(db, "todos", deletedTodo.id), {
+    await updateDoc(doc(db, `todos_${user.uid}`, deletedTodo.id), {
       deleted: false,
       deletedAt: null
     });
